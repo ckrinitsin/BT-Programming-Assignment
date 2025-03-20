@@ -25,6 +25,18 @@ public:
         return true;
     }
 
+    std::optional<V> get(K key)
+    {
+        std::list<std::pair<K, V>> list = get_bucket(key);
+
+        auto iter = bucket_find_key(list, key);
+        if (iter != list.end()) {
+            return std::optional<V>((*iter).second);
+        }
+
+        return std::optional<V>();
+    }
+
 private:
     size_t size;
 
