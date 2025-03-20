@@ -1,3 +1,4 @@
-server
-client
-!src
+/server
+/client
+!/src/server/
+!/src/client/
