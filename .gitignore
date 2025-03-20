@@ -1,4 +1,6 @@
 /server
 /client
+/compile_commands.json
+/.cache
 !/src/server/
 !/src/client/
