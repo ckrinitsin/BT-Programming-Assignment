@@ -17,19 +17,20 @@ public:
 
     bool insert(K key, V value)
     {
-        std::list<std::pair<K, V>> list = get_bucket(key);
+        std::list<std::pair<K, V>>& list = get_bucket(key);
 
         if (bucket_contains_key(list, key)) {
             return false;
         }
 
-        list.insert(value);
+        list.push_back(std::pair(key, value));
+
         return true;
     }
 
     std::optional<V> get(K key)
     {
-        std::list<std::pair<K, V>> list = get_bucket(key);
+        std::list<std::pair<K, V>>& list = get_bucket(key);
 
         auto iter = bucket_find_key(list, key);
         if (iter != list.end()) {
@@ -41,7 +42,7 @@ public:
 
     bool remove(K key)
     {
-        std::list<std::pair<K, V>> list = get_bucket(key);
+        std::list<std::pair<K, V>>& list = get_bucket(key);
 
         auto iter = bucket_find_key(list, key);
         if (iter != list.end()) {
@@ -71,19 +72,19 @@ private:
 
     std::hash<K> hash_function;
 
-    auto bucket_find_key(std::list<std::pair<K, V>> list, K key)
+    auto bucket_find_key(std::list<std::pair<K, V>>& list, K key)
     {
         return std::find_if(list.begin(), list.end(), [&key](const std::pair<K, V>& pair) {
             return pair.first == key;
         });
     }
 
-    bool bucket_contains_key(std::list<std::pair<K, V>> list, K key)
+    bool bucket_contains_key(std::list<std::pair<K, V>>& list, K key)
     {
-        return bucket_find_key(list, key) != list.end();
+        return list.begin() != list.end() && bucket_find_key(list, key) != list.end();
     }
 
-    std::list<std::pair<K, V>> get_bucket(K key)
+    std::list<std::pair<K, V>>& get_bucket(K key)
     {
         size_t index = hash_function(key) % size;
         return table.at(index);
