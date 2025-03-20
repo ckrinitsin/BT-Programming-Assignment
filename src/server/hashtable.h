@@ -2,6 +2,7 @@
 
 #include <algorithm>
 #include <list>
+#include <optional>
 #include <vector>
 
 template <typename K, typename V>
@@ -35,6 +36,19 @@ public:
         }
 
         return std::optional<V>();
+    }
+
+    bool remove(K key)
+    {
+        std::list<std::pair<K, V>> list = get_bucket(key);
+
+        auto iter = bucket_find_key(list, key);
+        if (iter != list.end()) {
+            list.erase(iter);
+            return true;
+        }
+
+        return false;
     }
 
 private:
