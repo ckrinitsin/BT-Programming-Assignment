@@ -1,2 +1,3 @@
-server_bin
-client_bin
+server
+client
+!src
