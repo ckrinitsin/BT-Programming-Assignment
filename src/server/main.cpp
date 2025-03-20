@@ -1,10 +1,25 @@
+#include <cstdint>
+#include <stdexcept>
 #include <string>
 
 #include "hashtable.h"
 
 int main(int argc, char* argv[])
 {
-    HashTable<int, std::string> hash_table { 5 };
+    if (argc != 2) {
+        std::cout << "One argument required" << '\n';
+        return 1;
+    }
+
+    uint32_t size;
+    try {
+        size = std::stoi(std::string(argv[1]));
+    } catch (const std::invalid_argument& e) {
+        std::cout << "Invalid argument" << '\n';
+        return 1;
+    }
+  
+    HashTable<int, std::string> hash_table { size };
 
     std::cout << "Add various kv-pairs" << '\n';
     hash_table.insert(1, "1");
@@ -27,4 +42,5 @@ int main(int argc, char* argv[])
     hash_table.remove(5);
     hash_table.print();
 
+    return 0;
 }
