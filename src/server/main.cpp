@@ -1,8 +1,9 @@
 #include <cstdint>
+#include <iostream>
 #include <stdexcept>
 #include <string>
 
-#include "hashtable.h"
+#include "shared_memory_server.h"
 
 int main(int argc, char* argv[])
 {
@@ -18,29 +19,8 @@ int main(int argc, char* argv[])
         std::cout << "Invalid argument" << '\n';
         return 1;
     }
-  
-    HashTable<int, std::string> hash_table { size };
 
-    std::cout << "Add various kv-pairs" << '\n';
-    hash_table.insert(1, "1");
-    hash_table.insert(2, "2");
-    hash_table.insert(3, "3");
-    hash_table.insert(4, "4");
-    hash_table.insert(5, "5");
-    hash_table.insert(6, "6");
-    hash_table.insert(7, "7");
-
-    hash_table.print();
-
-    std::cout << '\n';
-
-    std::cout << "Value for key 8: " << hash_table.get(8).value_or("Key not found!") << '\n';
-    std::cout << "Value for key 4: " << hash_table.get(4).value_or("Key not found!") << '\n';
-
-    std::cout << '\n';
-    std::cout << "Remove pair with key 5" << '\n';
-    hash_table.remove(5);
-    hash_table.print();
+    SharedMemoryServer<int, std::string> shm(size);
 
     return 0;
 }
