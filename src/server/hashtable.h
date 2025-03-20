@@ -13,6 +13,18 @@ public:
     {
     }
 
+    bool insert(K key, V value)
+    {
+        std::list<std::pair<K, V>> list = get_bucket(key);
+
+        if (bucket_contains_key(list, key)) {
+            return false;
+        }
+
+        list.insert(value);
+        return true;
+    }
+
 private:
     size_t size;
 
