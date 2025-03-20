@@ -1,6 +1,7 @@
 #pragma once
 
 #include <algorithm>
+#include <iostream>
 #include <list>
 #include <optional>
 #include <vector>
@@ -49,6 +50,18 @@ public:
         }
 
         return false;
+    }
+
+    void print()
+    {
+        size_t index { 0 };
+        for (auto bucket : table) {
+            std::cout << "Bucket " << index++ << ": [";
+            for (auto pair : bucket) {
+                std::cout << "(" << pair.first << ", " << pair.second << ")";
+            }
+            std::cout << "]" << "\n";
+        }
     }
 
 private:
