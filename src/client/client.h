@@ -28,5 +28,5 @@ private:
         std::optional<const std::string> k,
         std::optional<const std::string> v);
     bool request_processed(SharedMemory* shared_memory, int index);
-    std::string process_result(SharedMemory* shared_memory, int index);
+    std::string process_respond(SharedMemory* shared_memory, int index);
 };

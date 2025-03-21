@@ -7,7 +7,7 @@ Client::Client()
     shm_fd = shm_open(SHM_NAME, O_RDWR, 0666);
     if (shm_fd == -1) {
         std::cout << "Server not running" << '\n';
-        return;
+        exit(-1);
     }
 
     shared_memory =
@@ -29,9 +29,11 @@ void Client::start_client()
         std::cout << "Choose the operation (i: Insert, g: Get, r: Remove, p: Print, e: Exit)"
                   << '\n';
         std::cin >> operation;
+
         switch (operation) {
         case 'e':
             return;
+
         case 'i':
             std::cout << "Insert: Enter the k-v pair(<int> <int>):" << '\n';
             if (!(std::cin >> k >> v)) {
@@ -43,6 +45,7 @@ void Client::start_client()
             index = send_request(
                 shared_memory, INSERT, std::optional(serialize(k)), std::optional(serialize(v)));
             break;
+
         case 'g': {
             std::cout << "Get: Enter the key(<int>):" << '\n';
             if (!(std::cin >> k)) {
@@ -54,6 +57,7 @@ void Client::start_client()
             index = send_request(shared_memory, GET, std::optional(serialize(k)), std::nullopt);
             break;
         }
+
         case 'r':
             std::cout << "Remove: Enter key(<int>):" << '\n';
             if (!(std::cin >> k)) {
@@ -64,15 +68,17 @@ void Client::start_client()
             };
             index = send_request(shared_memory, DELETE, std::optional(serialize(k)), std::nullopt);
             break;
+
         case 'p':
             index = send_request(shared_memory, PRINT, std::nullopt, std::nullopt);
             break;
+
         default:
             break;
         }
 
         if (index != -1) {
-            std::string response = process_result(shared_memory, index);
+            std::string response = process_respond(shared_memory, index);
             std::cout << response << '\n';
         }
         std::cout << '\n';
@@ -81,6 +87,10 @@ void Client::start_client()
 
 bool Client::request_processed(SharedMemory* shared_memory, int index)
 {
+    if (index >= QUEUE_SIZE || index < 0) {
+        return false;
+    }
+
     if (shared_memory->full) {
         return false;
     }
@@ -125,9 +135,12 @@ int Client::send_request(
     return index;
 }
 
-std::string Client::process_result(SharedMemory* shared_memory, int index)
+std::string Client::process_respond(SharedMemory* shared_memory, int index)
 {
-    std::cout << "process result" << '\n';
+    if (index >= QUEUE_SIZE || index < 0) {
+        return std::string();
+    }
+
     pthread_mutex_lock(&shared_memory->mutex);
 
     while (!request_processed(shared_memory, index)) {

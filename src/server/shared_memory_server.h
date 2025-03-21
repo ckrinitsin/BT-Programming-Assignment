@@ -9,9 +9,9 @@
 #include <unistd.h>
 
 template <typename K, typename V>
-class SharedMemoryServer {
+class Server {
 public:
-    SharedMemoryServer(size_t size)
+    Server(size_t size)
         : hash_table(size)
     {
         shm_fd = shm_open(SHM_NAME, O_CREAT | O_RDWR, 0666);
@@ -34,7 +34,7 @@ public:
         pthread_cond_init(&shared_memory->cond_var, &cond_attr);
     }
 
-    ~SharedMemoryServer()
+    ~Server()
     {
         munmap(shared_memory, sizeof(SharedMemory));
         close(shm_fd);
@@ -70,6 +70,7 @@ public:
                         MAX_VALUE_SIZE);
                 }
                 break;
+
             case GET: {
                 std::cout << "Get operation" << '\n';
                 hash_table.insert(key, value);
@@ -85,6 +86,7 @@ public:
                 }
                 break;
             }
+
             case DELETE:
                 std::cout << "Remove operation" << '\n';
                 if (hash_table.remove(key)) {
@@ -95,10 +97,11 @@ public:
                 } else {
                     strncpy(
                         request->response,
-                        serialize<std::string>("Couldn't find key'").c_str(),
+                        serialize<std::string>("Couldn't find the key").c_str(),
                         MAX_VALUE_SIZE);
                 }
                 break;
+
             case PRINT:
                 std::cout << "Print operation" << '\n';
                 strncpy(
@@ -106,6 +109,7 @@ public:
                     serialize<std::string>(hash_table.string()).c_str(),
                     MAX_VALUE_SIZE);
                 break;
+
             default:
                 break;
             }
