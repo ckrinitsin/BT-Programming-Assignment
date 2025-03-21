@@ -8,9 +8,19 @@
 #include <sys/mman.h>
 #include <unistd.h>
 
+/**
+ * @class Server
+ * @brief Represents the server, which performs operations on the hashtable based on the requests of
+ * the client.
+ */
 template <typename K, typename V>
 class Server {
 public:
+    /**
+     * @brief Constructs a new hashtable and initializes a shared memory buffer.
+     *
+     * @param size The number of buckets in the hashtable.
+     */
     Server(size_t size)
         : hash_table(size)
     {
@@ -34,6 +44,9 @@ public:
         pthread_cond_init(&shared_memory->cond_var, &cond_attr);
     }
 
+    /**
+     * @brief Unmaps and unlinks the shared memory.
+     */
     ~Server()
     {
         munmap(shared_memory, sizeof(SharedMemory));
@@ -41,6 +54,11 @@ public:
         shm_unlink(SHM_NAME);
     }
 
+    /**
+     * @brief The main loop of the server.
+     *
+     * @details The server checks the shared memory for new requests and executes them.
+     */
     void process_requests()
     {
         while (true) {
@@ -121,8 +139,18 @@ public:
     }
 
 private:
+    /**
+     * @brief The hashtable.
+     */
     HashTable<K, V> hash_table;
 
-    int shm_fd;
+    /**
+     * @brief Memory which is shared with the client.
+     */
     SharedMemory* shared_memory;
+
+    /**
+     * @brief File descriptor for the shared memory, used to unmap and close the memory at the end.
+     */
+    int shm_fd;
 };
