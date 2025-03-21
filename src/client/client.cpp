@@ -25,6 +25,7 @@ void Client::start_client()
     while (true) {
         char operation;
         int k, v;
+        int index = -1;
         std::cout << "Choose the operation (i: Insert, g: Get, r: Remove, p: Print, e: Exit)"
                   << '\n';
         std::cin >> operation;
@@ -39,7 +40,7 @@ void Client::start_client()
                 std::cin.ignore(std::numeric_limits<std::streamsize>::max(), '\n');
                 break;
             };
-            send_request(
+            index = send_request(
                 shared_memory, INSERT, std::optional(serialize(k)), std::optional(serialize(v)));
             break;
         case 'g': {
@@ -50,9 +51,7 @@ void Client::start_client()
                 std::cin.ignore(std::numeric_limits<std::streamsize>::max(), '\n');
                 break;
             };
-            int index = send_request(shared_memory, GET, std::optional(serialize(k)), std::nullopt);
-            std::string response = process_result(shared_memory, index);
-            std::cout << "Got: " << response << '\n';
+            index = send_request(shared_memory, GET, std::optional(serialize(k)), std::nullopt);
             break;
         }
         case 'r':
@@ -63,13 +62,18 @@ void Client::start_client()
                 std::cin.ignore(std::numeric_limits<std::streamsize>::max(), '\n');
                 break;
             };
-            send_request(shared_memory, DELETE, std::optional(serialize(k)), std::nullopt);
+            index = send_request(shared_memory, DELETE, std::optional(serialize(k)), std::nullopt);
             break;
         case 'p':
-            send_request(shared_memory, PRINT, std::nullopt, std::nullopt);
+            index = send_request(shared_memory, PRINT, std::nullopt, std::nullopt);
             break;
         default:
             break;
+        }
+
+        if (index != -1) {
+            std::string response = process_result(shared_memory, index);
+            std::cout << response << '\n';
         }
         std::cout << '\n';
     }
@@ -123,6 +127,7 @@ int Client::send_request(
 
 std::string Client::process_result(SharedMemory* shared_memory, int index)
 {
+    std::cout << "process result" << '\n';
     pthread_mutex_lock(&shared_memory->mutex);
 
     while (!request_processed(shared_memory, index)) {

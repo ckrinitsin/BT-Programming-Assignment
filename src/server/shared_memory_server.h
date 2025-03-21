@@ -57,33 +57,61 @@ public:
 
             switch (request->type) {
             case INSERT:
-                std::cout << "Inserting" << '\n';
-                hash_table.insert(key, value);
+                std::cout << "Insert operation" << '\n';
+                if (hash_table.insert(key, value)) {
+                    strncpy(
+                        request->response,
+                        serialize<std::string>("Inserted successfully").c_str(),
+                        MAX_VALUE_SIZE);
+                } else {
+                    strncpy(
+                        request->response,
+                        serialize<std::string>("Key is already available").c_str(),
+                        MAX_VALUE_SIZE);
+                }
                 break;
             case GET: {
-                std::cout << "Getting" << '\n';
+                std::cout << "Get operation" << '\n';
                 hash_table.insert(key, value);
                 std::optional<V> result = hash_table.get(key);
                 if (result.has_value()) {
                     std::string response = serialize<V>(result.value());
                     strncpy(request->response, response.c_str(), MAX_VALUE_SIZE);
-                    pthread_cond_signal(&shared_memory->cond_var);
+                } else {
+                    strncpy(
+                        request->response,
+                        serialize<std::string>("Couldn't get any value").c_str(),
+                        MAX_VALUE_SIZE);
                 }
                 break;
             }
             case DELETE:
-                std::cout << "Deleting" << '\n';
-                hash_table.remove(key);
+                std::cout << "Remove operation" << '\n';
+                if (hash_table.remove(key)) {
+                    strncpy(
+                        request->response,
+                        serialize<std::string>("Key successfully deleted").c_str(),
+                        MAX_VALUE_SIZE);
+                } else {
+                    strncpy(
+                        request->response,
+                        serialize<std::string>("Couldn't find key'").c_str(),
+                        MAX_VALUE_SIZE);
+                }
                 break;
             case PRINT:
-                std::cout << "Printing" << '\n';
-                hash_table.print();
+                std::cout << "Print operation" << '\n';
+                strncpy(
+                    request->response,
+                    serialize<std::string>(hash_table.string()).c_str(),
+                    MAX_VALUE_SIZE);
                 break;
             default:
                 break;
             }
             shared_memory->tail = (1 + shared_memory->tail) % QUEUE_SIZE;
             shared_memory->full = false;
+            pthread_cond_signal(&shared_memory->cond_var);
             pthread_mutex_unlock(&shared_memory->mutex);
         }
     }

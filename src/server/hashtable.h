@@ -6,6 +6,7 @@
 #include <mutex>
 #include <optional>
 #include <shared_mutex>
+#include <sstream>
 #include <vector>
 
 template <typename K, typename V>
@@ -65,18 +66,22 @@ public:
         return false;
     }
 
-    void print()
+    std::string string()
     {
+        std::ostringstream output;
+
         size_t index { 0 };
         for (auto bucket : table) {
-            std::cout << "Bucket " << index << ": [";
+            output << "Bucket " << index << ": [";
             std::shared_lock<std::shared_mutex> lock(bucket_mutexes.at(index));
             for (auto pair : bucket) {
-                std::cout << "(" << pair.first << ", " << pair.second << ")";
+                output << "(" << pair.first << ", " << pair.second << ")";
             }
-            std::cout << "]" << "\n";
+            output << "]" << "\n";
             ++index;
         }
+
+        return output.str();
     }
 
 private:
