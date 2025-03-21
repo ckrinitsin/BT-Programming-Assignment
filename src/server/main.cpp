@@ -20,7 +20,7 @@ int main(int argc, char* argv[])
         return 1;
     }
 
-    SharedMemoryServer<int, std::string> shm(size);
+    Server<int, int> shm(size);
 
     shm.process_requests();
 

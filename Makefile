@@ -5,7 +5,7 @@ CXXFLAGS := -std=c++23 -Wall -Wextra -Wpedantic -O3 -Isrc/common
 all: server client
 server: src/server/main.cpp
 	${CXX} ${CXXFLAGS} $^ -o $@ 
-client: src/client/main.cpp
+client: src/client/main.cpp src/client/client.cpp
 	${CXX} ${CXXFLAGS} $^ -o $@
 
 .PHONY: clean
