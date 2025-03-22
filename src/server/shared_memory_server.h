@@ -91,7 +91,6 @@ public:
 
             case GET: {
                 std::cout << "Get operation" << '\n';
-                hash_table.insert(key, value);
                 std::optional<V> result = hash_table.get(key);
                 if (result.has_value()) {
                     std::string response = serialize<V>(result.value());
