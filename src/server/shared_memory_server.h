@@ -2,6 +2,7 @@
 
 #include "hashtable.h"
 #include "shared_memory.h"
+#include <csignal>
 #include <cstring>
 #include <fcntl.h>
 #include <optional>
@@ -18,11 +19,8 @@ class Server {
 public:
     /**
      * @brief Constructs a new hashtable and initializes a shared memory buffer.
-     *
-     * @param size The number of buckets in the hashtable.
      */
-    Server(size_t size)
-        : hash_table(size)
+    Server()
     {
         shm_fd = shm_open(SHM_NAME, O_CREAT | O_RDWR, 0666);
 
@@ -48,12 +46,19 @@ public:
     /**
      * @brief Unmaps and unlinks the shared memory.
      */
-    ~Server()
+    void terminate_server()
     {
         munmap(shared_memory, sizeof(SharedMemory));
         close(shm_fd);
         shm_unlink(SHM_NAME);
     }
+
+    /**
+     * @brief Initializes the hashtable.
+     *
+     * @param size The number of buckets in the hashtable.
+     */
+    void initialize_hashtable(size_t size) { hash_table = HashTable<K, V>(size); }
 
     /**
      * @brief The main loop of the server.
