@@ -34,7 +34,6 @@ public:
             mmap(0, sizeof(SharedMemory), PROT_READ | PROT_WRITE, MAP_SHARED, shm_fd, 0);
 
         shared_memory->tail = shared_memory->head = 0;
-        shared_memory->full = false;
 
         pthread_mutexattr_t mutex_attr;
         pthread_condattr_t cond_attr;
@@ -74,7 +73,7 @@ public:
         while (true) {
             pthread_mutex_lock(&shared_memory->mutex);
 
-            if (shared_memory->tail == shared_memory->head && !shared_memory->full) {
+            if (shared_memory->request[shared_memory->head].status != SENT) {
                 pthread_cond_wait(&shared_memory->cond_var, &shared_memory->mutex);
             }
 
@@ -140,8 +139,8 @@ public:
             default:
                 break;
             }
+            shared_memory->request[shared_memory->head].status = PROCESSED;
             shared_memory->head = (1 + shared_memory->head) % QUEUE_SIZE;
-            shared_memory->full = false;
             pthread_cond_signal(&shared_memory->cond_var);
             pthread_mutex_unlock(&shared_memory->mutex);
         }

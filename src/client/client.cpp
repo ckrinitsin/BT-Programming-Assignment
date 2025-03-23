@@ -91,20 +91,7 @@ bool Client::request_processed(SharedMemory* shared_memory, int index)
         return false;
     }
 
-    if (shared_memory->full) {
-        return false;
-    }
-    if (shared_memory->tail == shared_memory->head && !shared_memory->full) {
-        return true;
-    }
-
-    for (int i = shared_memory->head; i != shared_memory->tail; i = (i + 1) % QUEUE_SIZE) {
-        if (i == index) {
-            return false;
-        }
-    }
-
-    return true;
+    return shared_memory->request[index].status == PROCESSED;
 }
 
 int Client::send_request(
@@ -117,17 +104,17 @@ int Client::send_request(
 
     pthread_mutex_lock(&shared_memory->mutex);
 
-    while (shared_memory->full) {
+    while (shared_memory->request[shared_memory->tail].status != FREE) {
         pthread_cond_wait(&shared_memory->cond_var, &shared_memory->mutex);
     }
 
     index = shared_memory->tail;
     Request* request = &shared_memory->request[index];
     request->type = type;
+    request->status = SENT;
     strncpy(request->key, k.value_or("null").c_str(), MAX_KEY_SIZE);
     strncpy(request->value, v.value_or("null").c_str(), MAX_VALUE_SIZE);
     shared_memory->tail = (1 + shared_memory->tail) % QUEUE_SIZE;
-    shared_memory->full = shared_memory->head == shared_memory->tail;
     pthread_cond_signal(&shared_memory->cond_var);
 
     pthread_mutex_unlock(&shared_memory->mutex);
@@ -147,6 +134,7 @@ std::string Client::process_respond(SharedMemory* shared_memory, int index)
         pthread_cond_wait(&shared_memory->cond_var, &shared_memory->mutex);
     }
     std::string result(shared_memory->request[index].response);
+    shared_memory->request[index].status = FREE;
     pthread_mutex_unlock(&shared_memory->mutex);
     return result;
 }
