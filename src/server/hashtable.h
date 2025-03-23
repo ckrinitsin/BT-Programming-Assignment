@@ -29,6 +29,11 @@ public:
     }
 
     /**
+     * @brief Constructs a new Hashtable.
+     */
+    HashTable() {}
+
+    /**
      * @brief Insert a kv-pair into the hashtable.
      *
      * @param key The key to determine the bucket.

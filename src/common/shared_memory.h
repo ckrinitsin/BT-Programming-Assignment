@@ -15,10 +15,16 @@
 enum Operations { INSERT, DELETE, GET, PRINT };
 
 /**
+ * @brief Possible statuses of a request.
+ */
+enum Status { FREE, SENT, PROCESSED };
+
+/**
  * @brief One request constists out of the operation, the arguments and the response.
  */
 struct Request {
     Operations type;
+    Status status = FREE;
     char key[MAX_KEY_SIZE];
     char value[MAX_VALUE_SIZE];
     char response[MAX_VALUE_SIZE];
@@ -38,7 +44,6 @@ struct SharedMemory {
 
     int tail;
     int head;
-    bool full;
 };
 
 /**

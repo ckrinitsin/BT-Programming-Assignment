@@ -8,7 +8,6 @@
 #include <string>
 #include <sys/mman.h>
 #include <unistd.h>
-#include <utility>
 
 #include "shared_memory.h"
 

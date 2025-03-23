@@ -2,6 +2,7 @@
 
 #include "hashtable.h"
 #include "shared_memory.h"
+#include <csignal>
 #include <cstring>
 #include <fcntl.h>
 #include <optional>
@@ -18,13 +19,14 @@ class Server {
 public:
     /**
      * @brief Constructs a new hashtable and initializes a shared memory buffer.
-     *
-     * @param size The number of buckets in the hashtable.
      */
-    Server(size_t size)
-        : hash_table(size)
+    Server()
     {
-        shm_fd = shm_open(SHM_NAME, O_CREAT | O_RDWR, 0666);
+        shm_fd = shm_open(SHM_NAME, O_EXCL | O_CREAT | O_RDWR, 0666);
+        if (shm_fd == -1) {
+            std::cout << "Server is already running!" << '\n';
+            exit(-1);
+        }
 
         ftruncate(shm_fd, sizeof(SharedMemory));
 
@@ -55,6 +57,13 @@ public:
     }
 
     /**
+     * @brief Initializes the hashtable.
+     *
+     * @param size The number of buckets in the hashtable.
+     */
+    void initialize_hashtable(size_t size) { hash_table = HashTable<K, V>(size); }
+
+    /**
      * @brief The main loop of the server.
      *
      * @details The server checks the shared memory for new requests and executes them.
@@ -64,11 +73,11 @@ public:
         while (true) {
             pthread_mutex_lock(&shared_memory->mutex);
 
-            if (shared_memory->tail == shared_memory->head && !shared_memory->full) {
+            if (shared_memory->request[shared_memory->head].status != SENT) {
                 pthread_cond_wait(&shared_memory->cond_var, &shared_memory->mutex);
             }
 
-            Request* request = &shared_memory->request[shared_memory->tail];
+            Request* request = &shared_memory->request[shared_memory->head];
 
             K key = deserialize<K>(request->key);
             V value = deserialize<V>(request->value);
@@ -130,8 +139,8 @@ public:
             default:
                 break;
             }
-            shared_memory->tail = (1 + shared_memory->tail) % QUEUE_SIZE;
-            shared_memory->full = false;
+            shared_memory->request[shared_memory->head].status = PROCESSED;
+            shared_memory->head = (1 + shared_memory->head) % QUEUE_SIZE;
             pthread_cond_signal(&shared_memory->cond_var);
             pthread_mutex_unlock(&shared_memory->mutex);
         }
