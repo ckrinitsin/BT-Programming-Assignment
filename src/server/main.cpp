@@ -16,7 +16,6 @@ Server<int, int> shm;
 void signal_handler(int signal) {
     if (signal == SIGINT) {
         std::cout << "Server shutting down" << '\n';
-        shm.terminate_server();
         exit(0);
     }
 }

@@ -46,7 +46,7 @@ public:
     /**
      * @brief Unmaps and unlinks the shared memory.
      */
-    void terminate_server()
+    ~Server()
     {
         munmap(shared_memory, sizeof(SharedMemory));
         close(shm_fd);
