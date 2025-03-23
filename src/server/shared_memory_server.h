@@ -22,7 +22,11 @@ public:
      */
     Server()
     {
-        shm_fd = shm_open(SHM_NAME, O_CREAT | O_RDWR, 0666);
+        shm_fd = shm_open(SHM_NAME, O_EXCL | O_CREAT | O_RDWR, 0666);
+        if (-1 == shm_fd) {
+            std::cout << "Server is already running!" << '\n';
+            exit(-1);
+        }
 
         ftruncate(shm_fd, sizeof(SharedMemory));
 
