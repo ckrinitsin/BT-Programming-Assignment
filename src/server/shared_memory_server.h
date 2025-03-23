@@ -32,6 +32,7 @@ public:
             mmap(0, sizeof(SharedMemory), PROT_READ | PROT_WRITE, MAP_SHARED, shm_fd, 0);
 
         shared_memory->tail = shared_memory->head = 0;
+        shared_memory->full = false;
 
         pthread_mutexattr_t mutex_attr;
         pthread_condattr_t cond_attr;
@@ -68,7 +69,7 @@ public:
                 pthread_cond_wait(&shared_memory->cond_var, &shared_memory->mutex);
             }
 
-            Request* request = &shared_memory->request[shared_memory->tail];
+            Request* request = &shared_memory->request[shared_memory->head];
 
             K key = deserialize<K>(request->key);
             V value = deserialize<V>(request->value);
@@ -130,7 +131,7 @@ public:
             default:
                 break;
             }
-            shared_memory->tail = (1 + shared_memory->tail) % QUEUE_SIZE;
+            shared_memory->head = (1 + shared_memory->head) % QUEUE_SIZE;
             shared_memory->full = false;
             pthread_cond_signal(&shared_memory->cond_var);
             pthread_mutex_unlock(&shared_memory->mutex);

@@ -98,13 +98,13 @@ bool Client::request_processed(SharedMemory* shared_memory, int index)
         return true;
     }
 
-    for (int i = shared_memory->head - 1; i != shared_memory->tail; i = (i - 1) % QUEUE_SIZE) {
+    for (int i = shared_memory->head; i != shared_memory->tail; i = (i + 1) % QUEUE_SIZE) {
         if (i == index) {
             return false;
         }
     }
 
-    return shared_memory->tail != index;
+    return true;
 }
 
 int Client::send_request(
@@ -121,12 +121,12 @@ int Client::send_request(
         pthread_cond_wait(&shared_memory->cond_var, &shared_memory->mutex);
     }
 
-    index = shared_memory->head;
+    index = shared_memory->tail;
     Request* request = &shared_memory->request[index];
     request->type = type;
     strncpy(request->key, k.value_or("null").c_str(), MAX_KEY_SIZE);
     strncpy(request->value, v.value_or("null").c_str(), MAX_VALUE_SIZE);
-    shared_memory->head = (1 + shared_memory->head) % QUEUE_SIZE;
+    shared_memory->tail = (1 + shared_memory->tail) % QUEUE_SIZE;
     shared_memory->full = shared_memory->head == shared_memory->tail;
     pthread_cond_signal(&shared_memory->cond_var);
 
