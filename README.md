@@ -19,7 +19,7 @@ $ ./server <number-of-buckets>
 
 ### Client
 
-2. Execute the client:
+2. Execute the client(s):
 ```bash
 $ ./client
 ```

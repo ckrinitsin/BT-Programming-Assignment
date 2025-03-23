@@ -14,7 +14,10 @@
  */
 enum Operations { INSERT, DELETE, GET, PRINT };
 
-enum Status { FREE, SENT, PROCESSED};
+/**
+ * @brief Possible statuses of a request.
+ */
+enum Status { FREE, SENT, PROCESSED };
 
 /**
  * @brief One request constists out of the operation, the arguments and the response.

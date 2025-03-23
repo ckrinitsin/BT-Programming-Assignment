@@ -30,7 +30,6 @@ public:
 
     /**
      * @brief Constructs a new Hashtable.
-     *
      */
     HashTable() {}
 

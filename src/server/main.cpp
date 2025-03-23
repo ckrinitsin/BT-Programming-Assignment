@@ -4,7 +4,7 @@
 #include <stdexcept>
 #include <string>
 
-#include "shared_memory_server.h"
+#include "server.h"
 
 Server<int, int> shm;
 
@@ -13,7 +13,8 @@ Server<int, int> shm;
  *
  * @param signal Specifies the signal, which was caught.
  */
-void signal_handler(int signal) {
+void signal_handler(int signal)
+{
     if (signal == SIGINT) {
         std::cout << "Server shutting down" << '\n';
         exit(0);

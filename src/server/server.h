@@ -23,7 +23,7 @@ public:
     Server()
     {
         shm_fd = shm_open(SHM_NAME, O_EXCL | O_CREAT | O_RDWR, 0666);
-        if (-1 == shm_fd) {
+        if (shm_fd == -1) {
             std::cout << "Server is already running!" << '\n';
             exit(-1);
         }
